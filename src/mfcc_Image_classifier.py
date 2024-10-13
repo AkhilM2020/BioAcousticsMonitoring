@@ -115,7 +115,19 @@ def mfcc_generator_github_uploader(audio_file_path, github_dataset_name):
     
 # Example usage:
 def main():
+    import configparser
 
+    # Load configurations from config file
+    config = configparser.ConfigParser()
+    script_dir = os.path.abspath( os.path.dirname( __file__ ) )
+    if 'linux' in platform:
+        ini_path = os.path.join(script_dir,'../.config/config.ini')
+    elif 'win' in platform:
+        ini_path = os.path.join(script_dir,'..\\.config\\config.ini')
+    config.read(ini_path)
+    # Machine Learning model settings from config file
+    CLASS_LABELS = config['machine_learning']['class_lables']
+    
     audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\Dataset\\BUZZ Dataset\\BUZZ1_FULL\\BUZZ1\\out_of_sample_data_for_validation\\cricket_test\\cricket1_192_168_4_10-2017-08-19_00-00-01.wav"
     # audio_file_path = 'D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\Recording_20240906_014847.wav'  # Path to the 10-second .wav audio file
     # audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\Dataset\\BUZZ Dataset\\BUZZ1_Partial_500samples\\BUZZ1\\out_of_sample_data_for_validation\\bee_test\\192_168_4_6-2017-08-09_14-15-01_0.wav"
@@ -124,9 +136,12 @@ def main():
     # audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_beeOrNot.wav"
     audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_Kaggle.wav"
 
-    mfcc_generator_github_uploader(audio_file_path,"bee_dataset")
+    #mfcc_generator_github_uploader(audio_file_path,"bee_dataset")
    
     le.classes_ = np.array(['bee', 'cricket', 'noise'])  # Predefined labels
+    print(type(le.classes_),le.classes_)
+    le.classes_ =np.array(CLASS_LABELS.split(','))  # Predefined labels
+    print(type(le.classes_),le.classes_)
     # Classify the audio segments and get the percentage results
     print("audio_file_path=",audio_file_path)
     classification_percentages = classify_audio_segments(audio_file_path, model_filename, le)

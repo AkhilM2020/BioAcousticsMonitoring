@@ -1,11 +1,9 @@
 import paho.mqtt.client as mqtt
 import os
-from datetime import datetime
-import subprocess
-import configparser
 import mfcc_Image_classifier as mc
 import usb_microphone as um
 from sys import platform
+import configparser
 
 # Load configurations from config file
 config = configparser.ConfigParser()
@@ -75,7 +73,7 @@ def on_message(client, userdata, message):
 
     elif "#listen" in payload.lower():
        
-        ############################ RECORDING ################################
+        ############################ LISTENING ################################
         # Execute the record command and wait for it to finish
         DURATION=10  #constant duration
         wav_filename = f"Sound_Recording.wav"
@@ -91,7 +89,7 @@ def on_message(client, userdata, message):
         
         ############################ CLASSIFYING ################################
         
-        mc.le.classes_ =mc.np.array(CLASS_LABELS)  # Predefined labels
+        mc.le.classes_ =mc.np.array(CLASS_LABELS.split(','))  # Predefined labels
         # Classify the audio segments and get the percentage results
         classification_percentages = mc.classify_audio_segments(wav_filename, mc.model_filename, mc.le)
 
