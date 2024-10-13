@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from datetime import datetime
 import github as gt
 from sys import platform
+import audio_filter as af
 
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
 if 'linux' in platform:
@@ -52,11 +53,13 @@ def create_mfcc_image(y, sr, file_name):
 # Function to split audio file into 2-second pieces with 1-second overlap
 def split_audio(file_path, segment_length=2, overlap=1):
     y, sr = librosa.load(file_path, duration=60)  # Load the 10 second file
+    # Apply Butterworth bandpass filter
+    y_filtered = af.apply_bandpass_filter(y, 100, 2000, 8000)
     total_segments = []
     step = segment_length - overlap  # Calculate the step for overlapping
     
-    for start in np.arange(0, len(y)/sr - segment_length + step, step):
-        segment = y[int(start*sr): int((start+segment_length)*sr)]
+    for start in np.arange(0, len(y_filtered)/sr - segment_length + step, step):
+        segment = y_filtered[int(start*sr): int((start+segment_length)*sr)]
         total_segments.append((segment, sr))
         # print("total_segments in 10s audio =",start)
     return total_segments
