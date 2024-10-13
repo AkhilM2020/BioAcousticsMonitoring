@@ -125,12 +125,7 @@ def main():
     audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_Kaggle.wav"
 
     mfcc_generator_github_uploader(audio_file_path,"bee_dataset")
-
-    # n = len(sys.argv)
-    # print("Number of args=",n)
-    # if n>1:
-    #     audio_file_path=sys.argv[1]
-    
+   
     le.classes_ = np.array(['bee', 'cricket', 'noise'])  # Predefined labels
     # Classify the audio segments and get the percentage results
     print("audio_file_path=",audio_file_path)

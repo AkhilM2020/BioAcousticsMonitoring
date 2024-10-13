@@ -17,8 +17,6 @@ config.read(ini_path)
 GITHUB_TOKEN = config['github']['token']
 GITHUB_REPO = config['github']['repo']
 
-print("GITHUB_TOKEN",GITHUB_TOKEN)
-print("GITHUB_REPO",GITHUB_REPO)
 # GitHub API function to commit a file
 def commit_file_to_github(mfcc_file_path, github_file_path, commit_message="Committing dataset MFCC file"):
     """
