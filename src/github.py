@@ -3,11 +3,15 @@ import base64
 import json
 import configparser
 import os
+from sys import platform
 
 # Load configurations from config file
 config = configparser.ConfigParser()
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
-ini_path = os.path.join(script_dir,'..\\.config\\config.ini')
+if 'linux' in platform:
+    ini_path = os.path.join(script_dir,'../.config/config.ini')
+elif 'win' in platform:
+    ini_path = os.path.join(script_dir,'..\\.config\\config.ini')
 config.read(ini_path)
 
 GITHUB_TOKEN = config['github']['token']
@@ -34,7 +38,6 @@ def commit_file_to_github(mfcc_file_path, github_file_path, commit_message="Comm
     # Encode the content to base64
     with open(mfcc_file_path, "rb") as mfcc_file:
         encoded_content = str(base64.b64encode(mfcc_file.read())).split("'")[1]
-    #encoded_content = base64.b64encode(content.encode()).decode()
 
     # Headers for the HTTP request
     headers = {

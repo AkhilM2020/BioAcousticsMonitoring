@@ -8,9 +8,15 @@ from PIL import Image
 from sklearn.preprocessing import LabelEncoder
 from datetime import datetime
 import github as gt
+from sys import platform
 
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
-model_filename = os.path.join(script_dir,'..\\samples\\trained_rf_model.pkl')
+if 'linux' in platform:
+    model_filename = os.path.join(script_dir,'../samples/trained_rf_model.pkl')
+elif 'win' in platform:
+    model_filename = os.path.join(script_dir,'..\\samples\\trained_rf_model.pkl')
+
+
 le = LabelEncoder()
 def create_and_save_mfcc(wav_file, output_folder, file_name):
     y, sr = librosa.load(wav_file)
@@ -83,8 +89,7 @@ def classify_audio_segments(file_path, model_filename, label_encoder):
         mfcc_image_path = create_mfcc_image(segment, sr, f'mfcc_segment_{i}')
         predicted_label = classify_mfcc_image(mfcc_image_path, model, label_encoder)
         label_counts[predicted_label] += 1
-        #print(mfcc_image_path," Prediction=", predicted_label)
-        # Clean up (optional: remove the temporary image after classification)
+        # Clean up: remove the temporary image after classification)
         os.remove(mfcc_image_path)
     
     # Calculate classification percentages
@@ -99,9 +104,9 @@ def mfcc_generator_github_uploader(audio_file_path, github_dataset_name):
           
     # Loop over each segment, generate MFCC, classify, and update label counts
     for i, (segment, sr) in enumerate(audio_segments):
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        current_time = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
         mfcc_image_path = create_mfcc_image(segment, sr, f'mfcc_{current_time}_{i}')
-        response =gt.commit_file_to_github(mfcc_image_path, github_dataset_name+f'/mfcc_test_segment_{i}.png')
+        response =gt.commit_file_to_github(mfcc_image_path, github_dataset_name+f'/mfcc25_{current_time}_{i}.png')
         if response.status_code != 201:
             return response
         # Clean up (optional: remove the temporary image after classification)

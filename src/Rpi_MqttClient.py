@@ -4,11 +4,16 @@ from datetime import datetime
 import subprocess
 import configparser
 import mfcc_Image_classifier as mc
+import usb_microphone as um
+from sys import platform
 
 # Load configurations from config file
 config = configparser.ConfigParser()
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
-ini_path = os.path.join(script_dir,'..\\.config\\config.ini')
+if 'linux' in platform:
+    ini_path = os.path.join(script_dir,'../.config/config.ini')
+elif 'win' in platform:
+    ini_path = os.path.join(script_dir,'..\\.config\\config.ini')
 config.read(ini_path)
 
 # MQTT settings from config file
@@ -17,12 +22,8 @@ PORT = int(config['mqtt']['port'])
 SUBSCRIBE_TOPIC = config['mqtt']['subscribe_topic']
 PUBLISH_TOPIC = config['mqtt']['publish_topic']
 
-# Recording settings from config file
-DEVICE = config['recording']['device']
-DURATION = config['recording']['duration']
-FORMAT = config['recording']['format']
-CHANNELS = config['recording']['channels']
-RATE = config['recording']['rate']
+# Machine Learning model settings from config file
+CLASS_LABELS = config['machine_learning']['class_lables']
 
 # Callback when the client receives a CONNACK response from the broker
 def on_connect(client, userdata, flags, rc):
@@ -37,84 +38,62 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     payload = message.payload.decode()
     print(f"Received message '{payload}' on topic '{message.topic}'")
-    DURATION=10
-    if "#record" in payload.lower():
-        s = payload.split(":")
-        if len(s)==3:
-            DURATION=s[2]
+    DURATION=10 # default duration in seconds
+    
+   
+    if "#record" in payload.lower(): #Command format : #record:<dataset label>:<duration>
+        command_received = payload.split(":")
+        if len(command_received)==3:
+            DURATION=command_received[2]
         print("Recording started")
-
-        # Get the current time and create a file with that name
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"Recording_{current_time}.wav"
-        with open(filename, "w") as f:
-            f.write("Recording started at " + current_time)
-
-        print(f"File '{filename}' created")
         
         ############################ RECORDING ################################
         # Execute the record command and wait for it to finish
-        
-        record_command = f"arecord -D {DEVICE} --duration={DURATION} -f {FORMAT} -c{CHANNELS} -r{RATE} {filename}"
-        print("10s recording started...")
-        client.publish(PUBLISH_TOPIC, f"{filename} Recording for {DURATION}s started")
-        process = subprocess.run(record_command, shell=True, capture_output=True)
-        
-        # Check if the recording command was successful
-        if process.returncode == 0:
-            print("Recording command executed successfully")
-            client.publish(PUBLISH_TOPIC, f"{filename} Recording Completed")
-        else:
-            print(f"Recording command failed with error: {process.stderr.decode()}")
-            client.publish(PUBLISH_TOPIC, f"{filename} Recording Failed")
-            return None
+        wav_filename = f"Sound_Recording.wav"
+        client.publish(PUBLISH_TOPIC, f"Starting audio capturing for {DURATION}s")
+        result=um.record_audio(wav_filename,DURATION)
+        if result[0]==0:
+            print(result[1])
+            client.publish(PUBLISH_TOPIC, f"Successfully captured audio for {DURATION}s")
+        elif result[0]==-1:
+            print(f"Audio capturing failed with error: {result[1]}")
+            client.publish(PUBLISH_TOPIC, f"Audio capturing failed with error: {result[1]}")
+            return None         
         
         ############################ UPLOADING ################################
         
-        client.publish(PUBLISH_TOPIC, f"{filename} file uploading started")
-        response = mc.mfcc_generator_github_uploader(filename,s[1])
+        client.publish(PUBLISH_TOPIC, f"Starting to upload files to Github")
+        response = mc.mfcc_generator_github_uploader(wav_filename,command_received[1])
         
         # Check if the file upload to github is successful
         if response.status_code == 201:
             print("Github upload successfull")
-            client.publish(PUBLISH_TOPIC, f"{filename} Upload completed")
+            client.publish(PUBLISH_TOPIC, f"MFCC Dataset upload to Github completed")
         else:
-            print(f"Failed to commit file: {response.status_code} - {response.text}")
-            client.publish(PUBLISH_TOPIC, f"{filename} file uploading failed")
+            print(f"Failed to commit file to Github: {response.status_code} - {response.text}")
+            client.publish(PUBLISH_TOPIC, f"MFCC file uploading to Github failed: {response.status_code} - {response.text}")
 
     elif "#listen" in payload.lower():
-        # Get the current time and create a file with that name
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"Recording_{current_time}.wav"
-        with open(filename, "w") as f:
-            f.write("Recording started at " + current_time)
-
-        print(f"File '{filename}' created")
-        
+       
         ############################ RECORDING ################################
         # Execute the record command and wait for it to finish
-        DURATION=10
-        record_command = f"arecord -D {DEVICE} --duration={DURATION} -f {FORMAT} -c{CHANNELS} -r{RATE} {filename}"
-        print("10s recording started...")
-        client.publish(PUBLISH_TOPIC, f"{filename} Recording for {DURATION}s started")
-        process = subprocess.run(record_command, shell=True, capture_output=True)
+        DURATION=10  #constant duration
+        wav_filename = f"Sound_Recording.wav"
+        client.publish(PUBLISH_TOPIC, f"Starting audio listening for {DURATION}s")
+        result=um.record_audio(wav_filename,DURATION)
+        if result[0]==0:
+            print(result[1])
+            client.publish(PUBLISH_TOPIC, f"Successfully listened for {DURATION}s")
+        elif result[0]==-1:
+            print(f"Audio listening failed with error: {result[1]}")
+            client.publish(PUBLISH_TOPIC, f"Audio listening failed with error: {result[1]}")
+            return None         
         
-        # Check if the recording command was successful
-        if process.returncode == 0:
-            print("Recording command executed successfully")
-            client.publish(PUBLISH_TOPIC, f"{filename} Recording Completed")
-        else:
-            print(f"Recording command failed with error: {process.stderr.decode()}")
-            client.publish(PUBLISH_TOPIC, f"{filename} Recording Failed")
-            return None
+        ############################ CLASSIFYING ################################
         
-        ############################ UPLOADING ################################
-        
-        client.publish(PUBLISH_TOPIC, f"{filename} file uploading started")
-        mc.le.classes_ =mc.np.array(['bee', 'cricket', 'noise'])  # Predefined labels
+        mc.le.classes_ =mc.np.array(CLASS_LABELS)  # Predefined labels
         # Classify the audio segments and get the percentage results
-        print("audio_file_path=",filename)
-        classification_percentages = mc.classify_audio_segments(filename, mc.model_filename, mc.le)
+        classification_percentages = mc.classify_audio_segments(wav_filename, mc.model_filename, mc.le)
 
         print("Classification Percentages:")
         result=""
