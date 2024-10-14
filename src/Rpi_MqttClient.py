@@ -75,7 +75,11 @@ def on_message(client, userdata, message):
        
         ############################ LISTENING ################################
         # Execute the record command and wait for it to finish
-        DURATION=10  #constant duration
+        DURATION=10  #default duration in seconds
+        command_received = payload.split(":")
+        if len(command_received)==2:
+            DURATION=command_received[1]
+        
         wav_filename = f"Sound_Recording.wav"
         client.publish(PUBLISH_TOPIC, f"Starting audio listening for {DURATION}s")
         result=um.record_audio(wav_filename,DURATION)
@@ -91,7 +95,7 @@ def on_message(client, userdata, message):
         
         mc.le.classes_ =mc.np.array(CLASS_LABELS.split(','))  # Predefined labels
         # Classify the audio segments and get the percentage results
-        classification_percentages = mc.classify_audio_segments(wav_filename, mc.model_filename, mc.le)
+        classification_percentages = mc.classify_audio_segments(wav_filename, DURATION, mc.model_filename, mc.le)
 
         print("Classification Percentages:")
         result=""

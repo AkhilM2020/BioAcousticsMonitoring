@@ -51,8 +51,8 @@ def create_mfcc_image(y, sr, file_name):
 
 
 # Function to split audio file into 2-second pieces with 1-second overlap
-def split_audio(file_path, segment_length=2, overlap=1):
-    y, sr = librosa.load(file_path, duration=60)  # Load the 10 second file
+def split_audio(file_path, file_duration=60, segment_length=2, overlap=1):
+    y, sr = librosa.load(file_path, file_duration)  
     # Apply Butterworth bandpass filter
     y_filtered = af.apply_bandpass_filter(y, 100, 2000, 8000)
     total_segments = []
@@ -77,9 +77,9 @@ def classify_mfcc_image(image_path, model, label_encoder):
     return predicted_label[0]
 
 # Main function to process audio file and classify segments
-def classify_audio_segments(file_path, model_filename, label_encoder):
+def classify_audio_segments(file_path, file_duration, model_filename, label_encoder):
     # Split the audio into 2-second segments
-    audio_segments = split_audio(file_path)
+    audio_segments = split_audio(file_path,file_duration)
     
     label_counts = {label: 0 for label in label_encoder.classes_}
     total_segments = len(audio_segments)
