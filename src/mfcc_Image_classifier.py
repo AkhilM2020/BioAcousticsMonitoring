@@ -13,9 +13,9 @@ import audio_filter as af
 
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
 if 'linux' in platform:
-    model_filename = os.path.join(script_dir,'../samples/trained_rf_model.pkl')
+    model_filename = os.path.join(script_dir,'../samples/trained_rf_model_fullBuzz.pkl')
 elif 'win' in platform:
-    model_filename = os.path.join(script_dir,'..\\samples\\trained_rf_model.pkl')
+    model_filename = os.path.join(script_dir,'..\\samples\\trained_rf_model_fullBuzz.pkl')
 
 
 le = LabelEncoder()
