@@ -101,9 +101,9 @@ def classify_audio_segments(file_path, file_duration, model_filename, label_enco
     return percentages
 
 # Main function to process audio file to mfcc and upload to github
-def mfcc_generator_github_uploader(audio_file_path, github_dataset_name):
+def mfcc_generator_github_uploader(audio_file_path, github_dataset_name,audio_duration):
     # Split the audio into 2-second segments
-    audio_segments = split_audio(audio_file_path)
+    audio_segments = split_audio(audio_file_path,audio_duration)
           
     # Loop over each segment, generate MFCC, classify, and update label counts
     for i, (segment, sr) in enumerate(audio_segments):

@@ -61,7 +61,7 @@ def on_message(client, userdata, message):
         ############################ UPLOADING ################################
         
         client.publish(PUBLISH_TOPIC, f"Starting to upload files to Github")
-        response = mc.mfcc_generator_github_uploader(wav_filename,command_received[1])
+        response = mc.mfcc_generator_github_uploader(wav_filename,command_received[1],DURATION)
         
         # Check if the file upload to github is successful
         if response.status_code == 201:
