@@ -13,7 +13,7 @@ import audio_filter as af
 
 script_dir = os.path.abspath( os.path.dirname( __file__ ) )
 if 'linux' in platform:
-    model_filename = os.path.join(script_dir,'../samples/trained_rf_model_fullBuzz.pkl')
+    model_filename = os.path.join(script_dir,'../samples/trained_rf_model.pkl')
 elif 'win' in platform:
     model_filename = os.path.join(script_dir,'..\\samples\\trained_rf_model_fullBuzz.pkl')
 
@@ -52,7 +52,7 @@ def create_mfcc_image(y, sr, file_name):
 
 # Function to split audio file into 2-second pieces with 1-second overlap
 def split_audio(file_path, file_duration, segment_length=2, overlap=1):
-    y, sr = librosa.load(file_path, duration=file_duration)  
+    y, sr = librosa.load(file_path)  
     # Apply Butterworth bandpass filter
     y_filtered = af.apply_bandpass_filter(y, 100, 2000, 8000)
     total_segments = []
