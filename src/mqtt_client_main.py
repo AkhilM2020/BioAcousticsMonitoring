@@ -71,7 +71,7 @@ def on_message(client, userdata, message):
             print(f"Failed to commit file to Github: {response.status_code} - {response.text}")
             client.publish(PUBLISH_TOPIC, f"MFCC file uploading to Github failed: {response.status_code} - {response.text}")
 
-    elif "#listen" in payload.lower():
+    elif "#listen" in payload.lower(): #Command format : #listen:<duration>:<ML model file name>
        
         ############################ LISTENING ################################
         # Execute the record command and wait for it to finish
