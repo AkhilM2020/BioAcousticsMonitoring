@@ -77,7 +77,7 @@ def on_message(client, userdata, message):
         # Execute the record command and wait for it to finish
         
         DURATION=10  #default duration in seconds
-        model_filename=mc.model_filename
+        model_filename=mc.model_filename #default model file name
         
         command_received = payload.split(":")
         if len(command_received)==2:
