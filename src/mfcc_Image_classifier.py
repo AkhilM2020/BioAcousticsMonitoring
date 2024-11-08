@@ -54,7 +54,8 @@ def create_mfcc_image(y, sr, file_name):
 def split_audio(file_path, file_duration, segment_length=2, overlap=1):
     y, sr = librosa.load(file_path)  
     # Apply Butterworth bandpass filter
-    y_filtered = af.apply_bandpass_filter(y, 100, 2000, 8000)
+    # y_filtered = af.apply_bandpass_filter(y, 100, 2000, 8000)
+    y_filtered=y
     total_segments = []
     step = segment_length - overlap  # Calculate the step for overlapping
     
@@ -93,7 +94,7 @@ def classify_audio_segments(file_path, file_duration, model_filename, label_enco
         predicted_label = classify_mfcc_image(mfcc_image_path, model, label_encoder)
         label_counts[predicted_label] += 1
         # Clean up: remove the temporary image after classification)
-        os.remove(mfcc_image_path)
+        # os.remove(mfcc_image_path)
     
     # Calculate classification percentages
     percentages = {label: (count / total_segments) * 100 for label, count in label_counts.items()}
@@ -136,9 +137,9 @@ def main():
     # audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\Dataset\\BUZZ Dataset\\BUZZ1_Partial_500samples\\BUZZ1\\out_of_sample_data_for_validation\\bee_test\\192_168_4_6-2017-08-09_14-15-01_0.wav"
     audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\Dataset\\BeeAudio_Kaggle\\sound_files\\sound_files\\2022-06-05--17-41-01_2__segment0.wav"
     #audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\Dataset\\ToBeeOrNotToBee_KaggleDataset\\CF003 - Active - Day - (214).wav"
-    # audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_beeOrNot.wav"
+    audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_beeOrNot.wav"
     audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\beesoundTest_Kaggle.wav"
-
+    audio_file_path = "D:\\Study\\Research\\Sem02_AppliedProject\\BeeAudioStorageServer\\Test_chamberline_06_16_44k.wav"
     #mfcc_generator_github_uploader(audio_file_path,"bee_dataset")
    
     le.classes_ = np.array(['bee', 'cricket', 'noise'])  # Predefined labels
@@ -147,8 +148,9 @@ def main():
     print(type(le.classes_),le.classes_)
     # Classify the audio segments and get the percentage results
     print("audio_file_path=",audio_file_path)
-    classification_percentages = classify_audio_segments(audio_file_path, model_filename, le)
-
+    model_filename = os.path.join(script_dir,'..\\ml_models\\trained_rf_model_fullBuzz.pkl')
+    classification_percentages = classify_audio_segments(audio_file_path,10, model_filename, le)
+    # def classify_audio_segments(file_path, file_duration, model_filename, label_encoder):
     print("Classification Percentages:")
     for label, percentage in classification_percentages.items():
         print(f"{label}: {percentage:.2f}%")
